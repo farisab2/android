@@ -104,6 +104,7 @@ import com.owncloud.android.ui.fragment.GalleryFragment;
 import com.owncloud.android.ui.fragment.OCFileListFragment;
 import com.owncloud.android.ui.preview.PreviewTextStringFragment;
 import com.owncloud.android.ui.trashbin.TrashbinActivity;
+import com.owncloud.android.utils.BitmapUtils;
 import com.owncloud.android.utils.DisplayUtils;
 import com.owncloud.android.utils.DrawerMenuUtil;
 import com.owncloud.android.utils.FilesSyncHelper;
@@ -302,7 +303,7 @@ public abstract class DrawerActivity extends ToolbarActivity
             getStorageManager().getCapability(getAccount().name).getServerBackground() != null) {
 
             OCCapability capability = getStorageManager().getCapability(getAccount().name);
-            String logo = capability.getServerLogo();
+            String logo = "https://nextcloud.niedermann.it/index.php/apps/theming/image/logo?useSvg=1&v=415";
             int primaryColor = ThemeColorUtils.primaryColor(getAccount(), false, this);
 
             // set background to primary color
@@ -315,7 +316,7 @@ public abstract class DrawerActivity extends ToolbarActivity
                     .using(Glide.buildStreamModelLoader(Uri.class, this), InputStream.class)
                     .from(Uri.class)
                     .as(SVGorImage.class)
-                    .transcode(new SvgOrImageBitmapTranscoder(128, 128), Bitmap.class)
+                    .transcode(new SvgOrImageBitmapTranscoder(180, 180), Bitmap.class)
                     .sourceEncoder(new StreamEncoder())
                     .cacheDecoder(new FileToStreamDecoder<>(new SvgOrImageDecoder()))
                     .decoder(new SvgOrImageDecoder());
@@ -324,14 +325,19 @@ public abstract class DrawerActivity extends ToolbarActivity
                 SimpleTarget target = new SimpleTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(Bitmap resource, GlideAnimation glideAnimation) {
-                        Drawable[] drawables = {new ColorDrawable(primaryColor), new BitmapDrawable(resource)};
+                        Bitmap logo = resource;
+                        int w = resource.getWidth();
+                        int h = resource.getHeight();
+                        int m = Math.max(w,h);
+                        if (m > 1000) {
+                            logo = BitmapUtils.scaleBitmap(resource, 1000, w, h, m);
+                        }
+                        Drawable[] drawables = {new ColorDrawable(primaryColor), new BitmapDrawable(logo)};
                         LayerDrawable layerDrawable = new LayerDrawable(drawables);
-
                         String name = capability.getServerName();
                         setDrawerHeaderLogo(layerDrawable, name);
                     }
                 };
-
                 requestBuilder
                     .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                     .load(Uri.parse(logo))
