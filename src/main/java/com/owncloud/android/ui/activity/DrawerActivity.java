@@ -330,7 +330,7 @@ public abstract class DrawerActivity extends ToolbarActivity
                 SimpleTarget target = new SimpleTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(Bitmap resource, GlideAnimation glideAnimation) {
-                        Bitmap logo;
+
                         int width = resource.getWidth();
                         int height = resource.getHeight();
                         float ratio = (float) width / (float) height;
@@ -341,7 +341,7 @@ public abstract class DrawerActivity extends ToolbarActivity
                             height = MAX_LOGO_SIZE_PX;
                             width = (int) (height * ratio);
                         }
-                        logo =  Bitmap.createScaledBitmap(resource, width, height, true);
+                        Bitmap logo =  Bitmap.createScaledBitmap(resource, width, height, true);
                         Drawable[] drawables = {new ColorDrawable(primaryColor), new BitmapDrawable(logo)};
                         LayerDrawable layerDrawable = new LayerDrawable(drawables);
                         String name = capability.getServerName();
@@ -351,7 +351,6 @@ public abstract class DrawerActivity extends ToolbarActivity
                 requestBuilder
                     .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                     .load(Uri.parse(logo))
-                    .override(250,250)
                     .into(target);
             }
         }
@@ -384,9 +383,9 @@ public abstract class DrawerActivity extends ToolbarActivity
     /**
      * setup drawer header, basically the logo color
      */
-    private void setupDrawerHeader(FrameLayout drawerHeader) {
+    /*private void setupDrawerHeader(FrameLayout drawerHeader) {
         drawerHeader.setBackgroundColor(ThemeColorUtils.primaryColor(getAccount(), true, this));
-    }
+    }*/
 
     /**
      * setup drawer content, basically setting the item selected listener.

@@ -460,7 +460,7 @@ jacoco {
 spotbugs {
     ignoreFailures = true // should continue checking
     effort = "max"
-    reportLevel = "medium"
+    reportLevel = "high"
 }
 
 tasks.withType(SpotBugsTask){task ->
