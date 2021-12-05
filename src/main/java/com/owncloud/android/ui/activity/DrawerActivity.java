@@ -150,6 +150,7 @@ public abstract class DrawerActivity extends ToolbarActivity
     private static final int ACTION_MANAGE_ACCOUNTS = 101;
     private static final int MENU_ORDER_EXTERNAL_LINKS = 3;
     private static final int MENU_ITEM_EXTERNAL_LINK = 111;
+    private static final int MAX_LOGO_SIZE_PX = 1000;
 
     /**
      * Reference to the drawer layout.
@@ -303,7 +304,7 @@ public abstract class DrawerActivity extends ToolbarActivity
             getStorageManager().getCapability(getAccount().name).getServerBackground() != null) {
 
             OCCapability capability = getStorageManager().getCapability(getAccount().name);
-            String logo = "https://nextcloud.niedermann.it/index.php/apps/theming/image/logo?useSvg=1&v=415";
+            String logo = capability.getServerLogo();
             int primaryColor = ThemeColorUtils.primaryColor(getAccount(), false, this);
 
             // set background to primary color
@@ -311,27 +312,36 @@ public abstract class DrawerActivity extends ToolbarActivity
             drawerHeader.setBackgroundColor(ThemeColorUtils.unchangedPrimaryColor(getAccount(), this));
 
             if (!TextUtils.isEmpty(logo) && URLUtil.isValidUrl(logo)) {
+
                 // background image
                 GenericRequestBuilder<Uri, InputStream, SVGorImage, Bitmap> requestBuilder = Glide.with(this)
                     .using(Glide.buildStreamModelLoader(Uri.class, this), InputStream.class)
                     .from(Uri.class)
                     .as(SVGorImage.class)
-                    .transcode(new SvgOrImageBitmapTranscoder(180, 180), Bitmap.class)
+                    .transcode(new SvgOrImageBitmapTranscoder(175, 128), Bitmap.class)
                     .sourceEncoder(new StreamEncoder())
                     .cacheDecoder(new FileToStreamDecoder<>(new SvgOrImageDecoder()))
                     .decoder(new SvgOrImageDecoder());
 
-                // background image
+                // background
+                /**
+                 * Resize image height and width to fit within 1000 px
+                 */
                 SimpleTarget target = new SimpleTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(Bitmap resource, GlideAnimation glideAnimation) {
-                        Bitmap logo = resource;
-                        int w = resource.getWidth();
-                        int h = resource.getHeight();
-                        int m = Math.max(w,h);
-                        if (m > 1000) {
-                            logo = BitmapUtils.scaleBitmap(resource, 1000, w, h, m);
+                        Bitmap logo;
+                        int width = resource.getWidth();
+                        int height = resource.getHeight();
+                        float ratio = (float) width / (float) height;
+                        if (ratio > 1) {
+                            width = MAX_LOGO_SIZE_PX;
+                            height = (int) (width / ratio);
+                        } else {
+                            height = MAX_LOGO_SIZE_PX;
+                            width = (int) (height * ratio);
                         }
+                        logo =  Bitmap.createScaledBitmap(resource, width, height, true);
                         Drawable[] drawables = {new ColorDrawable(primaryColor), new BitmapDrawable(logo)};
                         LayerDrawable layerDrawable = new LayerDrawable(drawables);
                         String name = capability.getServerName();
@@ -341,6 +351,7 @@ public abstract class DrawerActivity extends ToolbarActivity
                 requestBuilder
                     .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                     .load(Uri.parse(logo))
+                    .override(250,250)
                     .into(target);
             }
         }
@@ -979,7 +990,7 @@ public abstract class DrawerActivity extends ToolbarActivity
         Fragment fileDetailsSharingProcessFragment =
             getSupportFragmentManager().findFragmentByTag(FileDetailsSharingProcessFragment.TAG);
         if (fileDetailsSharingProcessFragment != null) {
-            ((FileDetailsSharingProcessFragment)fileDetailsSharingProcessFragment).onBackPressed();
+            ((FileDetailsSharingProcessFragment) fileDetailsSharingProcessFragment).onBackPressed();
         } else {
             super.onBackPressed();
         }
