@@ -314,6 +314,7 @@ public abstract class DrawerActivity extends ToolbarActivity
             if (!TextUtils.isEmpty(logo) && URLUtil.isValidUrl(logo)) {
 
                 // background image
+                // CS427 issue: https://github.com/nextcloud/android/issues/9102
                 GenericRequestBuilder<Uri, InputStream, SVGorImage, Bitmap> requestBuilder = Glide.with(this)
                     .using(Glide.buildStreamModelLoader(Uri.class, this), InputStream.class)
                     .from(Uri.class)
@@ -330,7 +331,7 @@ public abstract class DrawerActivity extends ToolbarActivity
                 SimpleTarget target = new SimpleTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(Bitmap resource, GlideAnimation glideAnimation) {
-
+                        //cs427 issue: https://github.com/nextcloud/android/issues/9102
                         int width = resource.getWidth();
                         int height = resource.getHeight();
                         float ratio = (float) width / (float) height;
